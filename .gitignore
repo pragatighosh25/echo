@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Next.js build output
+.next/
+**/.next/
+
+# Environments
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+**/.env
+
+# S3 simulator local uploads
+uploads/
+**/uploads/
+
+# TS build caching
+*.tsbuildinfo
+
+# IDE/OS files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

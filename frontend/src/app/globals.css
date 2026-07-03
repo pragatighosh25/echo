@@ -1,0 +1,162 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Echo Workspace Warm-Minimalist Light Mode Palette */
+  --background: 249 249 247;
+  --foreground: 26 28 27;
+  --card: 255 255 255;
+  --card-foreground: 26 28 27;
+  --primary: 0 0 0;
+  --primary-foreground: 255 255 255;
+  --muted: 244 244 242;
+  --muted-foreground: 76 69 70;
+  --border: 207 196 197;
+  --accent: 226 227 225;
+  --shadow: 0px 4px 20px rgba(0,0,0,0.03);
+}
+
+.dark {
+  /* Stitch Dark Mode Palette */
+  --background: 19 19 21;
+  --foreground: 229 225 228;
+  --card: 28 27 29;
+  --card-foreground: 229 225 228;
+  --primary: 255 255 255;
+  --primary-foreground: 19 19 21;
+  --muted: 32 31 34;
+  --muted-foreground: 142 145 146;
+  --border: 53 52 55;
+  --accent: 42 42 44;
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.05);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+
+/* TipTap Editor Rich Text Styling overrides */
+.ProseMirror {
+  outline: none;
+  min-height: 200px;
+  line-height: 1.7;
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--muted-foreground);
+  pointer-events: none;
+  height: 0;
+}
+
+.ProseMirror blockquote {
+  border-left: 4px solid var(--primary);
+  padding-left: 1rem;
+  font-style: italic;
+  color: var(--muted-foreground);
+  margin: 1.5rem 0;
+}
+
+.ProseMirror pre {
+  background: var(--muted);
+  color: var(--foreground);
+  padding: 1rem;
+  border-radius: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9em;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+  border: 1px solid var(--border);
+}
+
+.ProseMirror h1, .ProseMirror h2, .ProseMirror h3 {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-weight: 700;
+  color: var(--foreground);
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.ProseMirror h1 { font-size: 1.8rem; letter-spacing: -0.035em; }
+.ProseMirror h2 { font-size: 1.4rem; letter-spacing: -0.025em; }
+.ProseMirror h3 { font-size: 1.2rem; letter-spacing: -0.015em; }
+
+.ProseMirror ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin: 1rem 0;
+}
+
+.ProseMirror ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin: 1rem 0;
+}
+
+.ProseMirror li {
+  margin-bottom: 0.4rem;
+}
+
+.ProseMirror hr {
+  border: none;
+  border-top: 2px solid var(--border);
+  margin: 2rem 0;
+}
+
+.ProseMirror a {
+  color: var(--primary);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Micro-animations and helpers */
+.hover-scale {
+  transition: transform 0.15s ease-out;
+}
+.hover-scale:hover {
+  transform: scale(1.02);
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.dark .glass {
+  background: rgba(24, 24, 27, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Custom font-outfit override to match Notion style guidelines (Inter + tight tracking) */
+.font-outfit {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  letter-spacing: -0.035em !important;
+}
