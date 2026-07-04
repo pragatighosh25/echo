@@ -53,6 +53,16 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col justify-center items-center p-4 relative overflow-hidden selection:bg-black/10 selection:text-black">
+      {/* Floating Back to Home Link */}
+      <div className="absolute top-6 left-6 z-20">
+        <Link 
+          href="/" 
+          className="text-xs font-semibold text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
+        >
+          ← Back to home
+        </Link>
+      </div>
+
       {/* Background gradients */}
       <div className="absolute top-[10%] right-[5%] w-96 h-96 bg-muted/20 rounded-full blur-[120px] pointer-events-none"></div>
       <div className="absolute bottom-[10%] left-[5%] w-96 h-96 bg-muted/10 rounded-full blur-[120px] pointer-events-none"></div>
@@ -60,9 +70,9 @@ export default function LoginPage() {
       <div className="w-full max-w-[440px] flex flex-col items-center relative z-10">
         {/* Logo Header */}
         <div className="mb-8 flex flex-col items-center text-center">
-          <div className="w-16 h-16 mb-4 rounded-2xl overflow-hidden shadow-sm border border-border/60 bg-card flex items-center justify-center p-2">
+          <Link href="/" className="w-16 h-16 mb-4 rounded-2xl overflow-hidden shadow-sm border border-border/60 bg-card flex items-center justify-center p-2 hover:scale-105 transition-transform">
             <img alt="Echo" className="w-full h-full object-contain" src="/logo.png" />
-          </div>
+          </Link>
           <h1 className="font-outfit text-3xl md:text-4xl font-bold tracking-tight text-foreground mb-1">
             Welcome Back
           </h1>

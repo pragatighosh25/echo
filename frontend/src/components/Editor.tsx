@@ -11,7 +11,6 @@ import {
   List,
   CheckSquare,
   FileText,
-  Sparkles,
   Download,
   AlertCircle,
   Eye,
@@ -44,10 +43,7 @@ export const Editor: React.FC<EditorProps> = ({
 
   const [localTitle, setLocalTitle] = useState(documentTitle);
   const { user } = useAuthStore();
-  const [activeAIBlockId, setActiveAIBlockId] = useState<string | null>(null);
   const [activeDropdownBlockId, setActiveDropdownBlockId] = useState<string | null>(null);
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiResult, setAiResult] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
   const [exportUrl, setExportUrl] = useState<string | null>(null);
   const activeBlockRef = useRef<string | null>(null);
@@ -62,6 +58,18 @@ export const Editor: React.FC<EditorProps> = ({
   useEffect(() => {
     setLocalTitle(documentTitle);
   }, [documentTitle]);
+
+  // Auto-grow textareas to match content height (including wrapped lines)
+  useEffect(() => {
+    if (!mounted) return;
+    blocks.forEach((block) => {
+      const textarea = document.getElementById(`textarea-${block.id}`) as HTMLTextAreaElement;
+      if (textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = `${textarea.scrollHeight}px`;
+      }
+    });
+  }, [blocks, mounted]);
 
   const handleTitleBlur = async () => {
     if (localTitle.trim() === documentTitle) return;
@@ -145,52 +153,7 @@ export const Editor: React.FC<EditorProps> = ({
     });
   };
 
-  // Trigger Asynchronous AI tasks using BullMQ
-  const handleAITask = async (feature: string, block: Block) => {
-    if (!block.content.trim()) return;
-    setAiLoading(true);
-    setAiResult(null);
 
-    try {
-      // 1. Queue job
-      const response = await apiFetch('/ai/process', {
-        method: 'POST',
-        body: JSON.stringify({
-          feature,
-          documentId,
-          text: block.content,
-        }),
-      });
-
-      const { jobId } = response;
-
-      // 2. Poll job status
-      const pollInterval = setInterval(async () => {
-        try {
-          const statusRes = await apiFetch(`/ai/jobs/${jobId}`);
-          if (statusRes.status === 'completed') {
-            clearInterval(pollInterval);
-            const aiText = statusRes.result.text;
-            setAiResult(aiText);
-            setAiLoading(false);
-
-            // Apply AI text directly into our block
-            submitOperation('update_block', { blockId: block.id, content: aiText });
-          } else if (statusRes.status === 'failed') {
-            clearInterval(pollInterval);
-            setAiLoading(false);
-            alert('AI generation failed: ' + statusRes.failedReason);
-          }
-        } catch (err) {
-          clearInterval(pollInterval);
-          setAiLoading(false);
-        }
-      }, 1000);
-    } catch (err) {
-      console.error(err);
-      setAiLoading(false);
-    }
-  };
 
   // Trigger Asynchronous Exports using BullMQ
   const handleExport = async (format: 'pdf') => {
@@ -454,13 +417,7 @@ export const Editor: React.FC<EditorProps> = ({
                               ))}
                             </div>
                           )}
-                        </div>                         <button
-                          onClick={() => setActiveAIBlockId(activeAIBlockId === block.id ? null : block.id)}
-                          title="Ask AI Spark"
-                          className="p-1 rounded text-foreground hover:bg-primary/10 transition-colors cursor-pointer"
-                        >
-                          <Sparkles className="h-3 w-3" />
-                        </button>
+                        </div>
                       </div>
                     )}
 
@@ -507,54 +464,7 @@ export const Editor: React.FC<EditorProps> = ({
                       />
                     </div>
 
-                    {/* Float AI Panel */}
-                    {activeAIBlockId === block.id && (
-                      <div className="absolute right-2 top-8 z-20 bg-card border border-border/60 rounded-lg shadow-xl p-3 flex flex-col gap-1.5 max-w-xs animate-in slide-in-from-top-2 text-foreground">
-                        <div className="text-[10px] font-bold text-foreground uppercase flex items-center gap-1 select-none">
-                          <Sparkles className="h-3 w-3 animate-pulse" /> Ask AI Spark
-                        </div>
-                        {aiLoading ? (
-                          <div className="text-xs text-muted-foreground py-2 flex items-center gap-1.5 select-none">
-                            <Sparkles className="h-3 w-3 animate-spin text-primary" /> Processing...
-                          </div>
-                        ) : (
-                          <>
-                            <div className="grid grid-cols-2 gap-1 text-[10px]">
-                              <button
-                                onClick={() => handleAITask('summarize', block)}
-                                className="px-2 py-1 rounded bg-muted hover:bg-accent text-left font-semibold text-foreground cursor-pointer transition-all"
-                              >
-                                Summarize Block
-                              </button>
-                              <button
-                                onClick={() => handleAITask('improve_writing', block)}
-                                className="px-2 py-1 rounded bg-muted hover:bg-accent text-left font-semibold text-foreground cursor-pointer transition-all"
-                              >
-                                Improve writing
-                              </button>
-                              <button
-                                onClick={() => handleAITask('explain_text', block)}
-                                className="px-2 py-1 rounded bg-muted hover:bg-accent text-left font-semibold text-foreground cursor-pointer transition-all"
-                              >
-                                Explain terms
-                              </button>
-                              <button
-                                onClick={() => handleAITask('extract_tasks', block)}
-                                className="px-2 py-1 rounded bg-muted hover:bg-accent text-left font-semibold text-foreground cursor-pointer transition-all"
-                              >
-                                Extract tasks
-                              </button>
-                            </div>
-                            <button
-                              onClick={() => setActiveAIBlockId(null)}
-                              className="text-[9px] text-muted-foreground hover:text-foreground font-semibold text-right mt-1 cursor-pointer transition-colors"
-                            >
-                              Cancel
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    )}
+
                   </div>
                 );
               })}

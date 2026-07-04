@@ -58,10 +58,13 @@ export default function DashboardPage() {
   const [transferCandidate, setTransferCandidate] = useState<{ userId: string; name: string } | null>(null);
   const [isTransferring, setIsTransferring] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(false);
   const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [removeCandidate, setRemoveCandidate] = useState<any | null>(null);
+  const [isRemovingMember, setIsRemovingMember] = useState(false);
 
   // Modal input fields state
   const [newWorkspaceName, setNewWorkspaceName] = useState('');
@@ -187,6 +190,7 @@ export default function DashboardPage() {
     }
 
     const loadProjectDetails = async () => {
+      setIsLoadingData(true);
       try {
         const documentsData = await apiFetch(`/documents/projects/${activeId}/documents`);
         setDocuments(documentsData);
@@ -196,6 +200,8 @@ export default function DashboardPage() {
         setProject(proj);
       } catch (err) {
         console.error(err);
+      } finally {
+        setIsLoadingData(false);
       }
     };
 
@@ -209,11 +215,14 @@ export default function DashboardPage() {
     if ((!isTasksTab && !isProjectKanban) || !activeId) return;
 
     const loadProjectTasks = async () => {
+      setIsLoadingData(true);
       try {
         const tasksData = await apiFetch(`/tasks/projects/${activeId}/tasks`);
         setTasks(tasksData);
       } catch (err) {
         console.error(err);
+      } finally {
+        setIsLoadingData(false);
       }
     };
 
@@ -225,11 +234,14 @@ export default function DashboardPage() {
     if (activeTab !== 'activity' || !activeWorkspaceId) return;
 
     const loadActivities = async () => {
+      setIsLoadingData(true);
       try {
         const logData = await apiFetch(`/workspaces/${activeWorkspaceId}/activity`);
         setActivities(logData);
       } catch (err) {
         console.error(err);
+      } finally {
+        setIsLoadingData(false);
       }
     };
 
@@ -339,6 +351,14 @@ export default function DashboardPage() {
     }
   };
 
+  const triggerToast = (title: string, body: string) => {
+    const toastId = Math.random().toString(36).substring(2, 9);
+    setToasts((prev) => [...prev, { id: toastId, title, body }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== toastId));
+    }, 4000);
+  };
+
   // Send workspace invitation
   const handleInviteUser = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -351,22 +371,27 @@ export default function DashboardPage() {
       });
       setWorkspaceMembers((prev) => [...prev, member]);
       setInviteEmail('');
-      alert('User invited successfully!');
+      triggerToast('User Invited', `${inviteEmail} has been invited successfully.`);
     } catch (err: any) {
-      alert(err.message || 'Failed to invite user.');
+      triggerToast('Failed to Invite', err.message || 'Failed to invite user.');
     }
   };
 
   // Remove workspace member
-  const handleRemoveMember = async (memberUserId: string) => {
-    if (!confirm('Are you sure you want to remove this member?')) return;
+  const confirmRemoveMember = async () => {
+    if (!removeCandidate) return;
+    setIsRemovingMember(true);
     try {
-      await apiFetch(`/workspaces/${activeWorkspaceId}/members/${memberUserId}`, {
+      await apiFetch(`/workspaces/${activeWorkspaceId}/members/${removeCandidate.userId}`, {
         method: 'DELETE',
       });
-      setWorkspaceMembers((prev) => prev.filter((m) => m.userId !== memberUserId));
+      setWorkspaceMembers((prev) => prev.filter((m) => m.userId !== removeCandidate.userId));
+      triggerToast('Member Removed', 'The member was successfully removed from the workspace.');
+      setRemoveCandidate(null);
     } catch (err: any) {
-      alert(err.message || 'Failed to remove member.');
+      triggerToast('Failed to Remove', err.message || 'Failed to remove member.');
+    } finally {
+      setIsRemovingMember(false);
     }
   };
 
@@ -451,8 +476,89 @@ export default function DashboardPage() {
     }
   };
 
+  if (!mounted) {
+    return (
+      <div className="flex h-screen w-screen bg-background text-foreground overflow-hidden">
+        {/* Left Sidebar Skeleton */}
+        <aside className="w-64 border-r border-border/30 bg-muted/30 flex flex-col justify-between p-4 space-y-6 animate-pulse">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 h-10 border-b border-border/30 pb-4">
+              <div className="h-6 w-6 bg-accent rounded-lg"></div>
+              <div className="h-4 w-24 bg-accent rounded"></div>
+            </div>
+            <div className="space-y-2">
+              <div className="h-3 w-12 bg-accent/60 rounded"></div>
+              <div className="h-9 bg-accent rounded-xl"></div>
+            </div>
+            <div className="space-y-3 pt-4">
+              <div className="h-8 bg-accent/40 rounded-lg"></div>
+              <div className="h-8 bg-accent/40 rounded-lg"></div>
+              <div className="h-8 bg-accent/40 rounded-lg"></div>
+            </div>
+          </div>
+          <div className="space-y-3 pt-4 border-t border-border/30">
+            <div className="h-8 bg-accent/40 rounded-lg"></div>
+            <div className="flex items-center gap-3">
+              <div className="h-8 w-8 rounded-full bg-accent"></div>
+              <div className="flex-1 space-y-1.5">
+                <div className="h-3 w-20 bg-accent rounded"></div>
+                <div className="h-2 w-28 bg-accent/60 rounded"></div>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        {/* Right Main Interface Skeleton */}
+        <div className="flex-1 flex flex-col bg-background overflow-hidden animate-pulse">
+          {/* Header Skeleton */}
+          <header className="h-14 border-b border-border/30 bg-card px-6 flex items-center justify-between">
+            <div className="h-8 w-48 sm:w-64 bg-muted rounded-lg"></div>
+            <div className="flex items-center gap-3">
+              <div className="h-5 w-16 bg-muted rounded-full"></div>
+              <div className="h-8 w-8 rounded-full bg-accent"></div>
+            </div>
+          </header>
+          
+          {/* Dashboard Content Skeleton */}
+          <main className="flex-1 p-8 space-y-6 overflow-hidden">
+            <div className="flex items-center justify-between border-b border-border/30 pb-4">
+              <div className="space-y-2">
+                <div className="h-6 w-40 bg-muted rounded"></div>
+                <div className="h-3 w-64 bg-muted/60 rounded"></div>
+              </div>
+            </div>
+            
+            {/* Grid of Bento Skeleton Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3].map((n) => (
+                <div key={n} className="bg-card border border-border/60 rounded-xl p-5 space-y-4 min-h-[180px]">
+                  <div className="flex items-start justify-between">
+                    <div className="w-10 h-10 bg-accent rounded-xl"></div>
+                    <div className="w-6 h-6 rounded-full bg-accent"></div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="h-4 w-32 bg-accent rounded"></div>
+                    <div className="h-3 w-full bg-accent/60 rounded"></div>
+                    <div className="h-3 w-5/6 bg-accent/60 rounded"></div>
+                  </div>
+                  <div className="pt-3 border-t border-border/30 flex items-center justify-between">
+                    <div className="space-y-1">
+                      <div className="h-2.5 w-16 bg-accent/60 rounded"></div>
+                      <div className="h-3.5 w-24 bg-accent rounded"></div>
+                    </div>
+                    <div className="h-5 w-12 bg-accent/60 rounded"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex h-screen w-screen overflow-hidden">
+    <div className="flex h-screen w-screen overflow-hidden bg-background text-foreground">
       {/* Real-Time Floating Alerts (Toasts) */}
       <div className="fixed top-4 right-4 z-50 space-y-2 pointer-events-none">
         {toasts.map((toast) => (
@@ -564,7 +670,37 @@ export default function DashboardPage() {
           {/* 2. PROJECT VIEW (Document list & Kanban task board nested) */}
           {activeTab === 'project' && (
             <div className="flex-1 flex flex-col overflow-hidden p-8 space-y-6">
-              {project ? (
+              {isLoadingData ? (
+                /* Main Area Skeleton Loader */
+                <div className="flex-1 flex flex-col space-y-6 animate-pulse text-left">
+                  <div className="space-y-2 pb-4 border-b border-border/30">
+                    <div className="h-8 w-48 bg-muted rounded"></div>
+                    <div className="h-3 w-64 bg-muted/60 rounded"></div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[1, 2, 3].map((n) => (
+                      <div key={n} className="bg-card border border-border/60 rounded-xl p-5 space-y-4 min-h-[180px]">
+                        <div className="flex items-start justify-between">
+                          <div className="w-10 h-10 bg-accent rounded-xl"></div>
+                          <div className="w-6 h-6 rounded-full bg-accent"></div>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="h-4 w-32 bg-accent rounded"></div>
+                          <div className="h-3 w-full bg-accent/60 rounded"></div>
+                          <div className="h-3 w-5/6 bg-accent/60 rounded"></div>
+                        </div>
+                        <div className="pt-3 border-t border-border/30 flex items-center justify-between">
+                          <div className="space-y-1">
+                            <div className="h-2.5 w-16 bg-accent/60 rounded"></div>
+                            <div className="h-3.5 w-24 bg-accent rounded"></div>
+                          </div>
+                          <div className="h-5 w-12 bg-accent/60 rounded"></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : project ? (
                 <>
                   {/* Project Title and Description */}
                   <div className="flex items-start justify-between border-b border-border pb-4 text-left shrink-0">
@@ -954,9 +1090,26 @@ export default function DashboardPage() {
                 <p className="text-sm text-muted-foreground">Keep track of updates and collaboration events across the workspace.</p>
               </div>
 
-              <div className="border-l border-border pl-8 space-y-6 relative text-left">
-                {activities.map((act) => {
-                  const userName = act.user?.name || 'Someone';
+              {isLoadingData ? (
+                /* Timeline Skeleton */
+                <div className="border-l border-border pl-8 space-y-8 relative text-left animate-pulse">
+                  {[1, 2, 3].map((n) => (
+                    <div key={n} className="relative">
+                      <span className="absolute -left-[51px] top-0.5 h-8 w-8 rounded-full bg-accent border border-border"></span>
+                      <div className="pl-3 space-y-2 py-1">
+                        <div className="flex items-center gap-2">
+                          <div className="h-3 w-20 bg-accent rounded"></div>
+                          <div className="h-2.5 w-24 bg-accent/60 rounded"></div>
+                        </div>
+                        <div className="h-3.5 w-64 bg-accent/60 rounded"></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="border-l border-border pl-8 space-y-6 relative text-left">
+                  {activities.map((act) => {
+                    const userName = act.user?.name || 'Someone';
                   const details = act.details || {};
 
                   // Format raw action tags to friendly, clear messages
@@ -1045,8 +1198,9 @@ export default function DashboardPage() {
                   <p className="text-xs text-muted-foreground italic pl-3">No activities logged yet.</p>
                 )}
               </div>
-            </div>
-          )}
+            )}
+          </div>
+        )}
 
           {/* 5. WORKSPACE SETTINGS */}
           {activeTab === 'settings' && (
@@ -1163,7 +1317,7 @@ export default function DashboardPage() {
                           {/* Remove member trigger */}
                           {['OWNER', 'ADMIN'].includes(userRole) && member.role !== 'OWNER' && member.userId !== user?.id && (
                             <button
-                              onClick={() => handleRemoveMember(member.userId)}
+                              onClick={() => setRemoveCandidate(member)}
                               className="px-2 py-1 text-[9px] bg-red-500/10 hover:bg-red-500/20 text-red-600 rounded font-bold"
                             >
                               Remove
@@ -1374,7 +1528,7 @@ export default function DashboardPage() {
             >
               {isTransferring ? 'Transferring...' : 'Transfer Ownership'}
             </button>
-          </div>
+          </div> 
         </div>
       </Modal>
 
@@ -1433,6 +1587,36 @@ export default function DashboardPage() {
               className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-lg transition-all cursor-pointer disabled:opacity-50"
             >
               {isDeleting ? 'Deleting...' : 'Delete Workspace'}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Remove Member Modal */}
+      <Modal
+        isOpen={!!removeCandidate}
+        onClose={() => setRemoveCandidate(null)}
+        title="Remove Workspace Member"
+        description="Are you sure you want to remove this member? They will lose access to all documents and projects in this workspace."
+      >
+        <div className="space-y-4 text-left">
+          <p className="text-sm">
+            Confirm removing <span className="font-bold text-foreground">{removeCandidate?.user?.name || removeCandidate?.user?.email || 'this member'}</span> from the workspace.
+          </p>
+          <div className="flex gap-2 justify-end pt-2 border-t border-border/30">
+            <button
+              type="button"
+              onClick={() => setRemoveCandidate(null)}
+              className="px-3.5 py-2 text-xs font-semibold rounded-lg bg-muted text-muted-foreground hover:bg-accent transition-all cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={confirmRemoveMember}
+              disabled={isRemovingMember}
+              className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-lg transition-all cursor-pointer disabled:opacity-50"
+            >
+              {isRemovingMember ? 'Removing...' : 'Remove Member'}
             </button>
           </div>
         </div>

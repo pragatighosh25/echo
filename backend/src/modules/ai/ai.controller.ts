@@ -36,7 +36,7 @@ export const triggerAIPendingJob = async (req: AuthenticatedRequest, res: Respon
         text: validated.text,
       },
       {
-        removeOnComplete: true,
+        removeOnComplete: false,
         removeOnFail: false,
       }
     );

@@ -9,7 +9,7 @@ import {
   FolderOpen, 
   Shield, 
   Zap, 
-  Search, 
+  CheckSquare, 
   ArrowRight 
 } from 'lucide-react';
 
@@ -42,7 +42,7 @@ export default function LandingPage() {
           
           <div className="hidden md:flex items-center gap-8">
             <a className="text-sm font-medium text-[#4c4546] hover:text-black transition-colors" href="#features">Product</a>
-            <a className="text-sm font-medium text-[#4c4546] hover:text-black transition-colors" href="#search">Solutions</a>
+            <a className="text-sm font-medium text-[#4c4546] hover:text-black transition-colors" href="#kanban">Workflows</a>
             <a className="text-sm font-medium text-[#4c4546] hover:text-black transition-colors" href="#cta">Pricing</a>
             <a className="text-sm font-medium text-[#4c4546] hover:text-black transition-colors" href="#cta">Resources</a>
           </div>
@@ -79,14 +79,14 @@ export default function LandingPage() {
               href="/signup" 
               className="bg-black text-white font-medium text-sm px-8 py-4 rounded-xl flex items-center justify-center gap-2 hover:bg-[#1a1c1b] transition-all shadow-sm active:scale-[0.98]"
             >
-              Get Echo free
+              Get Started
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link 
-              href="/signup" 
+              href="/login" 
               className="border border-[#cfc4c5] bg-transparent text-[#1a1c1b] font-medium text-sm px-8 py-4 rounded-xl hover:bg-[#f4f4f2] transition-all flex items-center justify-center"
             >
-              Request a demo
+              Log in
             </Link>
           </div>
         </section>
@@ -223,20 +223,6 @@ export default function LandingPage() {
           <div className="absolute -z-10 bottom-0 left-1/2 -translate-x-1/2 w-[90%] h-1/2 bg-[#dadad8]/30 blur-3xl rounded-full"></div>
         </section>
 
-        {/* Social Proof */}
-        <section className="py-12 border-b border-[#e8e8e6] mb-24 text-center">
-          <p className="font-outfit text-xs font-bold uppercase tracking-widest text-[#4c4546] mb-8">
-            Trusted by high-growth teams
-          </p>
-          <div className="flex flex-wrap justify-center items-center gap-x-16 gap-y-8 opacity-45 grayscale select-none">
-            <span className="font-outfit text-xl font-bold tracking-widest text-black">LUMINA</span>
-            <span className="font-outfit text-xl font-bold tracking-widest text-black">STRATOS</span>
-            <span className="font-outfit text-xl font-bold tracking-widest text-black">NEXUS</span>
-            <span className="font-outfit text-xl font-bold tracking-widest text-black">APEX</span>
-            <span className="font-outfit text-xl font-bold tracking-widest text-black">ORBIT</span>
-          </div>
-        </section>
-
         {/* Features Grid */}
         <section id="features" className="py-12 mb-24 scroll-mt-20">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -286,39 +272,47 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Deep Search Highlight */}
-        <section id="search" className="py-12 mb-24 scroll-mt-20">
+        {/* Kanban Board Spotlight */}
+        <section id="kanban" className="py-12 mb-24 scroll-mt-20">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center bg-[#f4f4f2] border border-[#e8e8e6] rounded-3xl p-8 md:p-12 overflow-hidden relative">
             <div className="z-10 max-w-xl">
               <div className="inline-flex items-center gap-1.5 bg-black text-white px-3 py-1 rounded-full mb-6">
-                <Zap className="h-3.5 w-3.5 fill-white" />
-                <span className="font-outfit text-[11px] font-bold uppercase tracking-wider">New Feature</span>
+                <Zap className="h-3.5 w-3.5 fill-white animate-pulse" />
+                <span className="font-outfit text-[11px] font-bold uppercase tracking-wider">Plan & Track</span>
               </div>
               <h2 className="font-outfit text-3xl md:text-4xl font-bold tracking-tight text-black mb-4">
-                Find anything with Deep Search
+                Plan workflows with Kanban Boards
               </h2>
               <p className="text-base md:text-lg text-[#4c4546] mb-8 leading-relaxed">
-                Echo's global search index doesn't just look at titles. It parses text, code blocks, and comments to find the needle in your knowledge haystack.
+                Echo's task management is directly integrated into your project. Drag tasks, update statuses, assign team members, and set priorities without ever leaving your workspace.
               </p>
               <Link 
                 href="/signup" 
                 className="font-outfit text-sm text-black hover:opacity-85 font-semibold flex items-center gap-1 group transition-colors"
               >
-                Explore search capabilities
+                Explore task boards
                 <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>
             
             <div className="relative w-full min-h-[220px] flex items-center justify-center">
-              <div className="w-full max-w-sm bg-white border border-[#cfc4c5] rounded-2xl p-6 shadow-lg rotate-2 transform hover:rotate-0 transition-transform duration-500">
-                <div className="flex items-center gap-3 border-b border-[#f4f4f2] pb-4 mb-4">
-                  <Search className="h-5 w-5 text-black" />
-                  <span className="text-sm text-[#4c4546] font-medium">Search for <span className="text-black font-semibold">"Q3 Strategy"</span>...</span>
+              <div className="w-full max-w-sm bg-white border border-[#cfc4c5] rounded-2xl p-6 shadow-lg rotate-2 transform hover:rotate-0 transition-transform duration-500 text-left font-outfit">
+                <div className="flex items-center justify-between border-b border-[#f4f4f2] pb-4 mb-4">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-slate-700"></span>
+                    <span className="text-xs font-bold uppercase tracking-wider text-black">In Progress</span>
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 bg-[#f4f4f2] rounded-full text-[#4c4546]">High</span>
                 </div>
                 <div className="space-y-3">
-                  <div className="h-4 w-3/4 bg-[#f4f4f2] rounded-lg"></div>
-                  <div className="h-4 w-full bg-[#f4f4f2] rounded-lg"></div>
-                  <div className="h-4 w-1/2 bg-[#f4f4f2] rounded-lg"></div>
+                  <h4 className="font-bold text-sm text-black">Implement collaborative text syncing engine</h4>
+                  <div className="flex items-center justify-between pt-2 border-t border-[#f4f4f2]">
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-5 w-5 rounded-full bg-black text-white flex items-center justify-center text-[9px] font-bold uppercase">B</div>
+                      <span className="text-[10px] text-[#4c4546]">Barsha</span>
+                    </div>
+                    <span className="text-[9px] bg-black text-white px-2 py-0.5 rounded font-semibold">Todo → Progress</span>
+                  </div>
                 </div>
               </div>
               {/* Decorative light blur */}
