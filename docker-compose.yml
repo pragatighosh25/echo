@@ -61,9 +61,74 @@ services:
     networks:
       - echo-network
 
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: echo-backend
+    restart: always
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/echo_db?schema=public
+      - REDIS_URL=redis://redis:6379
+      - KAFKA_BROKERS=kafka:29092
+      - JWT_SECRET=echo_jwt_access_secret_token_12984719827
+      - JWT_REFRESH_SECRET=echo_jwt_refresh_secret_token_98234791823
+      - AI_API_KEY=mock_key
+    depends_on:
+      - postgres
+      - redis
+      - kafka
+    volumes:
+      - uploads-volume:/uploads
+    networks:
+      - echo-network
+
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: echo-worker
+    restart: always
+    command: node dist/worker.js
+    environment:
+      - PORT=4000
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/echo_db?schema=public
+      - REDIS_URL=redis://redis:6379
+      - KAFKA_BROKERS=kafka:29092
+      - JWT_SECRET=echo_jwt_access_secret_token_12984719827
+      - JWT_REFRESH_SECRET=echo_jwt_refresh_secret_token_98234791823
+      - AI_API_KEY=mock_key
+    depends_on:
+      - postgres
+      - redis
+      - kafka
+    volumes:
+      - uploads-volume:/uploads
+    networks:
+      - echo-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:4000}
+    container_name: echo-frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    networks:
+      - echo-network
+
 volumes:
   pgdata:
   redisdata:
+  uploads-volume:
 
 networks:
   echo-network:
