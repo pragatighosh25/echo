@@ -65,6 +65,18 @@ export default function DashboardPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [removeCandidate, setRemoveCandidate] = useState<any | null>(null);
   const [isRemovingMember, setIsRemovingMember] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
+
+  // Real-time notifications state
+  const [toasts, setToasts] = useState<Toast[]>([]);
+
+  const triggerToast = (title: string, body: string) => {
+    const toastId = Math.random().toString(36).substring(2, 9);
+    setToasts((prev) => [...prev, { id: toastId, title, body }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== toastId));
+    }, 4000);
+  };
 
   // Modal input fields state
   const [newWorkspaceName, setNewWorkspaceName] = useState('');
@@ -83,7 +95,6 @@ export default function DashboardPage() {
   // UI state
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [toasts, setToasts] = useState<Toast[]>([]);
 
   // Task form state
   const [taskTitle, setTaskTitle] = useState('');
@@ -254,15 +265,15 @@ export default function DashboardPage() {
     if (!newWorkspaceName.trim()) return;
     const slug = newWorkspaceName.toLowerCase().trim().replace(/\s+/g, '-');
     try {
-      const data = await apiFetch('/workspaces', {
+      await apiFetch('/workspaces', {
         method: 'POST',
         body: JSON.stringify({ name: newWorkspaceName.trim(), slug }),
       });
       setIsWorkspaceModalOpen(false);
       setNewWorkspaceName('');
-      window.location.href = `/dashboard?workspaceId=${data.id}`;
-    } catch (err) {
-      alert('Failed to create workspace. Slug might be taken.');
+      triggerToast('Success', 'Workspace created successfully.');
+    } catch (err: any) {
+      triggerToast('Error', err.message || 'Failed to create workspace. Slug might be taken.');
     }
   };
 
@@ -278,9 +289,9 @@ export default function DashboardPage() {
       setNewProjectName('');
       setNewProjectDesc('');
       handleNavigation('project', data.id);
-      window.location.reload();
-    } catch (err) {
-      alert('Failed to create project.');
+      triggerToast('Success', 'Project created successfully.');
+    } catch (err: any) {
+      triggerToast('Error', err.message || 'Failed to create project.');
     }
   };
 
@@ -296,8 +307,9 @@ export default function DashboardPage() {
       setIsDocumentModalOpen(false);
       setNewDocTitle('');
       handleNavigation('document', newDoc.id);
-    } catch (err) {
-      alert('Failed to create document.');
+      triggerToast('Success', 'Document created successfully.');
+    } catch (err: any) {
+      triggerToast('Error', err.message || 'Failed to create document.');
     }
   };
 
@@ -322,8 +334,9 @@ export default function DashboardPage() {
       setTasks((prev) => [newTask, ...prev]);
       setTaskTitle('');
       setTaskAssigneeId('');
-    } catch (err) {
-      alert('Failed to create task.');
+      triggerToast('Success', 'Task created successfully.');
+    } catch (err: any) {
+      triggerToast('Error', err.message || 'Failed to create task.');
     }
   };
 
@@ -339,24 +352,23 @@ export default function DashboardPage() {
     }
   };
 
-  const handleDeleteTask = async (taskId: string) => {
-    if (!confirm('Are you sure you want to delete this task?')) return;
-    try {
-      await apiFetch(`/tasks/tasks/${taskId}`, {
-        method: 'DELETE',
-      });
-      setTasks((prev) => prev.filter((t) => t.id !== taskId));
-    } catch (err) {
-      alert('Failed to delete task.');
-    }
+  const handleDeleteTask = (taskId: string) => {
+    setTaskToDelete(taskId);
   };
 
-  const triggerToast = (title: string, body: string) => {
-    const toastId = Math.random().toString(36).substring(2, 9);
-    setToasts((prev) => [...prev, { id: toastId, title, body }]);
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== toastId));
-    }, 4000);
+  const confirmDeleteTask = async () => {
+    if (!taskToDelete) return;
+    try {
+      await apiFetch(`/tasks/tasks/${taskToDelete}`, {
+        method: 'DELETE',
+      });
+      setTasks((prev) => prev.filter((t) => t.id !== taskToDelete));
+      triggerToast('Success', 'Task deleted successfully.');
+    } catch (err) {
+      triggerToast('Error', 'Failed to delete task.');
+    } finally {
+      setTaskToDelete(null);
+    }
   };
 
   // Send workspace invitation
@@ -411,7 +423,7 @@ export default function DashboardPage() {
       setTransferCandidate(null);
       window.location.reload();
     } catch (err: any) {
-      alert(err.message || 'Failed to transfer ownership.');
+      triggerToast('Error', err.message || 'Failed to transfer ownership.');
     } finally {
       setIsTransferring(false);
     }
@@ -429,10 +441,10 @@ export default function DashboardPage() {
         method: 'POST',
       });
       setIsArchiveModalOpen(false);
-      alert('Workspace archived.');
+      triggerToast('Success', 'Workspace archived.');
       window.location.href = '/dashboard';
     } catch (err: any) {
-      alert(err.message || 'Failed to archive workspace.');
+      triggerToast('Error', err.message || 'Failed to archive workspace.');
     } finally {
       setIsArchiving(false);
     }
@@ -450,10 +462,10 @@ export default function DashboardPage() {
         method: 'DELETE',
       });
       setIsDeleteModalOpen(false);
-      alert('Workspace permanently deleted.');
+      triggerToast('Success', 'Workspace permanently deleted.');
       window.location.href = '/dashboard';
     } catch (err: any) {
-      alert(err.message || 'Failed to delete workspace.');
+      triggerToast('Error', err.message || 'Failed to delete workspace.');
     } finally {
       setIsDeleting(false);
     }
@@ -559,8 +571,34 @@ export default function DashboardPage() {
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-background text-foreground">
+      {/* Delete Task Modal */}
+      <Modal
+        isOpen={!!taskToDelete}
+        onClose={() => setTaskToDelete(null)}
+        title="Delete Task"
+        description="Are you sure you want to delete this task? This action cannot be undone."
+      >
+        <div className="space-y-4 text-left">
+          <div className="flex gap-2 justify-end pt-2 border-t border-border/30">
+            <button
+              type="button"
+              onClick={() => setTaskToDelete(null)}
+              className="px-3.5 py-2 text-xs font-semibold rounded-lg bg-muted text-muted-foreground hover:bg-accent transition-all cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={confirmDeleteTask}
+              className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-lg transition-all cursor-pointer"
+            >
+              Delete Task
+            </button>
+          </div>
+        </div>
+      </Modal>
+
       {/* Real-Time Floating Alerts (Toasts) */}
-      <div className="fixed top-4 right-4 z-50 space-y-2 pointer-events-none">
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none">
         {toasts.map((toast) => (
           <div
             key={toast.id}
