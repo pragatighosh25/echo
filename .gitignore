@@ -15,8 +15,7 @@ node_modules/
 **/.env
 
 # S3 simulator local uploads
-uploads/
-**/uploads/
+/uploads/
 
 # TS build caching
 *.tsbuildinfo
