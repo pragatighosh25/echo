@@ -21,7 +21,6 @@ export const uploadFile = async (
   // Write file to local uploads directory
   await fs.promises.writeFile(filePath, fileBuffer);
 
-  const serverPort = process.env.PORT || 4000;
-  // Return a accessible local URL
-  return `http://localhost:${serverPort}/uploads/${fileName}`;
+  // Return a relative URL path (resolved dynamically by the controller)
+  return `/uploads/${fileName}`;
 };

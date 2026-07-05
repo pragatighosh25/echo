@@ -71,13 +71,18 @@ export const getExportJobStatus = async (req: AuthenticatedRequest, res: Respons
     }
 
     const state = await job.getState();
-    const result = job.returnvalue;
+    const result = job.returnvalue ? { ...job.returnvalue } : null;
+
+    if (result && result.url && result.url.startsWith('/')) {
+      const origin = `${req.protocol}://${req.get('host')}`;
+      result.url = `${origin}${result.url}`;
+    }
 
     res.json({
       jobId: job.id,
       status: state,
       progress: job.progress,
-      result: result || null,
+      result: result,
       failedReason: job.failedReason || null,
     });
   } catch (error) {
