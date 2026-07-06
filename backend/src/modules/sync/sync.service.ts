@@ -124,11 +124,6 @@ export const processDocumentOperation = async (
       details: { documentId, version: newVersion, type: op.type },
     });
 
-    await publishEvent('search.events', doc.id, {
-      documentId,
-      action: 'INDEX',
-    });
-
     return {
       success: true,
       currentVersion: newVersion,

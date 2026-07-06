@@ -20,7 +20,7 @@ import {
   UserPlus,
   Shield,
   Bell,
-  Search,
+  Terminal,
   Layers,
   User,
   Edit3,
@@ -670,8 +670,8 @@ export default function DashboardPage() {
               onClick={() => setIsCommandPaletteOpen(true)}
               className="flex items-center gap-3 px-3 py-1.5 rounded-lg bg-muted text-muted-foreground hover:text-foreground text-xs font-medium w-48 sm:w-64 border border-border/80"
             >
-              <Search className="h-4 w-4" />
-              <span>Search workspace...</span>
+              <Terminal className="h-4 w-4" />
+              <span>Quick Actions...</span>
               <kbd className="ml-auto bg-card border border-border px-1 py-0.5 rounded text-[10px] font-mono shadow-sm hidden sm:inline-block">
                 Ctrl K
               </kbd>
@@ -1196,11 +1196,7 @@ export default function DashboardPage() {
                       icon = <CheckSquare className="h-4 w-4 text-muted-foreground" />;
                       bgClasses = 'bg-muted/60 border-border/80';
                       break;
-                    case 'COMMENT_ADDED':
-                      actionText = `left a comment on a document block`;
-                      icon = <MessageSquare className="h-4 w-4 text-muted-foreground" />;
-                      bgClasses = 'bg-muted/60 border-border/80';
-                      break;
+
                     default:
                       actionText = `completed action: ${act.action.toLowerCase().replace('_', ' ')}`;
                       icon = <ActivityIcon className="h-4 w-4 text-muted-foreground" />;

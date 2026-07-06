@@ -8,10 +8,7 @@ import workspaceRoutes from './modules/workspaces/workspaces.routes';
 import projectRoutes from './modules/projects/projects.routes';
 import documentRoutes from './modules/documents/documents.routes';
 import taskRoutes from './modules/tasks/tasks.routes';
-import commentRoutes from './modules/comments/comments.routes';
 import notificationRoutes from './modules/notifications/notifications.routes';
-import searchRoutes from './modules/search/search.routes';
-import aiRoutes from './modules/ai/ai.routes';
 import uploadRoutes from './modules/uploads/uploads.routes';
 import exportRoutes from './modules/exports/exports.routes';
 
@@ -37,10 +34,7 @@ app.use('/workspaces', workspaceRoutes);
 app.use('/projects', projectRoutes);
 app.use('/documents', documentRoutes);
 app.use('/tasks', taskRoutes);
-app.use('/comments', commentRoutes);
 app.use('/notifications', notificationRoutes);
-app.use('/search', searchRoutes);
-app.use('/ai', aiRoutes);
 app.use('/uploads', uploadRoutes);
 app.use('/exports', exportRoutes);
 

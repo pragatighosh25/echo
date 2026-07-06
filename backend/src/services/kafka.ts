@@ -28,12 +28,10 @@ export const connectKafka = async () => {
     const topicsToCreate = [
       'document.operations',
       'workspace.events',
-      'comments.events',
       'notification.events',
       'task.events',
       'activity.events',
       'history.events',
-      'search.events',
     ];
 
     const existingTopics = await admin.listTopics();
